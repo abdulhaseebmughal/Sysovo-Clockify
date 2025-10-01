@@ -118,7 +118,7 @@ export default function LoginForm() {
             fontSize: "13px"
           }}
         >
-          Sign in to Sysovo
+          Sign in to ovo
         </Typography>
 
         {error && (
