@@ -1,0 +1,264 @@
+import { useState, useEffect } from "react";
+import { Box, TextField, Button, Typography, Paper, Alert } from "@mui/material";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
+export default function LoginForm() {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
+
+  const navigate = useNavigate();
+
+  // ✅ Redirect if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+    if (token && user) {
+      const parsedUser = JSON.parse(user);
+      if (parsedUser.role === "CEO") navigate("/dashboard");
+      else navigate("/employee-dashboard");
+    }
+  }, [navigate]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await axios.post("http://localhost:5000/api/auth/login", {
+        email,
+        password,
+      });
+
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      setSuccess("Login successful ✅");
+
+      const userRole = res.data.user.role;
+
+      // ✅ Role ke hisaab se redirect
+      if (userRole === "CEO") {
+        navigate("/dashboard");
+      } else {
+        navigate("/employee-dashboard");
+      }
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || "Login failed");
+      } else {
+        setError("An unexpected error occurred");
+      }
+    }
+  };
+
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: "var(--bg-main)",
+        padding: "20px",
+      }}
+    >
+      <Paper
+        elevation={0}
+        sx={{
+          p: 4.5,
+          width: "100%",
+          maxWidth: 400,
+          borderRadius: "12px",
+          bgcolor: "var(--bg-surface)",
+          border: "1px solid var(--border)",
+          boxShadow: "0 8px 32px rgba(15, 23, 42, 0.08)",
+        }}
+      >
+        {/* Brand Logo */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            mb: 0,
+          }}
+        >
+          <img
+            src="https://res.cloudinary.com/dpi82firq/image/upload/v1759321173/Site_Icon_1_la1sm9.png"
+            alt="Clockify Logo"
+            style={{
+              width: "80px",
+              height: "80px",
+            }}
+          />
+        </Box>
+
+        <Typography
+          variant="h5"
+          sx={{
+            textAlign: "center",
+            fontWeight: 700,
+            color: "var(--text-primary)",
+            mb: 0.8,
+            letterSpacing: "-0.02em"
+          }}
+        >
+          Welcome Back
+        </Typography>
+
+        <Typography
+          variant="body2"
+          sx={{
+            textAlign: "center",
+            color: "var(--text-secondary)",
+            mb: 3.5,
+            fontSize: "13px"
+          }}
+        >
+          Sign in to ovo
+        </Typography>
+
+        {error && (
+          <Alert
+            severity="error"
+            sx={{
+              mb: 2.5,
+              borderRadius: "8px",
+              bgcolor: "#fef2f2",
+              color: "var(--error)",
+              border: "1px solid #fecaca",
+              fontSize: "13px",
+              "& .MuiAlert-icon": { color: "var(--error)" },
+            }}
+          >
+            {error}
+          </Alert>
+        )}
+
+        {success && (
+          <Alert
+            severity="success"
+            sx={{
+              mb: 2.5,
+              borderRadius: "8px",
+              bgcolor: "#f0fdf4",
+              color: "var(--success)",
+              border: "1px solid #bbf7d0",
+              fontSize: "13px",
+              "& .MuiAlert-icon": { color: "var(--success)" },
+            }}
+          >
+            {success}
+          </Alert>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <TextField
+            label="Email"
+            type="email"
+            fullWidth
+            margin="dense"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            sx={{
+              mb: 1.5,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                bgcolor: "var(--bg-surface)",
+                fontSize: "14px",
+                color: "var(--text-primary)",
+                "& fieldset": {
+                  borderColor: "var(--border)",
+                },
+                "&:hover fieldset": {
+                  borderColor: "var(--primary-light)",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "var(--primary)",
+                  borderWidth: "1.5px",
+                },
+              },
+              "& .MuiInputLabel-root": {
+                fontSize: "14px",
+                color: "var(--text-secondary)",
+                "&.Mui-focused": {
+                  color: "var(--primary)",
+                },
+              },
+              "& .MuiOutlinedInput-input": {
+                color: "var(--text-primary)",
+              },
+            }}
+          />
+
+          <TextField
+            label="Password"
+            type="password"
+            fullWidth
+            margin="dense"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            sx={{
+              mb: 2.5,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                bgcolor: "var(--bg-surface)",
+                fontSize: "14px",
+                color: "var(--text-primary)",
+                "& fieldset": {
+                  borderColor: "var(--border)",
+                },
+                "&:hover fieldset": {
+                  borderColor: "var(--primary-light)",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "var(--primary)",
+                  borderWidth: "1.5px",
+                },
+              },
+              "& .MuiInputLabel-root": {
+                fontSize: "14px",
+                color: "var(--text-secondary)",
+                "&.Mui-focused": {
+                  color: "var(--primary)",
+                },
+              },
+              "& .MuiOutlinedInput-input": {
+                color: "var(--text-primary)",
+              },
+            }}
+          />
+
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{
+              py: 1.3,
+              borderRadius: "8px",
+              bgcolor: "var(--primary)",
+              color: "#000",
+              fontWeight: 700,
+              fontSize: "14px",
+              textTransform: "none",
+              boxShadow: "none",
+              "&:hover": {
+                bgcolor: "var(--primary-hover)",
+                boxShadow: "0 4px 16px rgba(204, 255, 0, 0.3)",
+                transform: "translateY(-1px)",
+              },
+              transition: "all 0.2s ease",
+            }}
+          >
+            Sign In
+          </Button>
+        </form>
+      </Paper>
+    </Box>
+  );
+}
