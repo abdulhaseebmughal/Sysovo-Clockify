@@ -8,12 +8,12 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     role: {
       type: String,
-      enum: ["CEO", "Manager", "Employee"], // 👈 Main Role
+      enum: ["CEO",  "Employee"], //  Main Role
       default: "Employee",
     },
     subRole: {
       type: String,
-      enum: ["Developer", "Designer", "Content Writer", "SEO", "Marketing"], // 👈 Sub-categories
+      enum: ["Developer", "Designer", "Content Writer", "SEO", "Marketing"], //  Sub-categories
       // default: "None",
     },
   },

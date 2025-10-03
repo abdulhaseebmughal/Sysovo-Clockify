@@ -62,8 +62,12 @@ export default function LoginForm() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        bgcolor: "var(--bg-main)",
-        padding: "20px",
+        backgroundImage: "url('https://res.cloudinary.com/dpi82firq/image/upload/v1759334363/Sysovo_Company_Profile_5_v7kzah.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        padding: { xs: "15px", sm: "20px" },
+        position: "relative",
       }}
     >
       <Paper
@@ -76,6 +80,14 @@ export default function LoginForm() {
           bgcolor: "var(--bg-surface)",
           border: "1px solid var(--border)",
           boxShadow: "0 8px 32px rgba(15, 23, 42, 0.08)",
+          position: "absolute",
+          right: { xs: "50%", sm: "50%", md: "50%", lg: "10%", xl: "15%" },
+          top: "50%",
+          transform: { xs: "translate(50%, -50%)", sm: "translate(50%, -50%)", md: "translate(50%, -50%)", lg: "translate(0, -50%)", xl: "translate(0, -50%)" },
+          "@media (max-width: 600px)": {
+            maxWidth: "90%",
+            p: 3,
+          },
         }}
       >
         {/* Brand Logo */}
@@ -118,7 +130,7 @@ export default function LoginForm() {
             fontSize: "13px"
           }}
         >
-          Sign in to ovo
+          Sign in to Sysovo
         </Typography>
 
         {error && (
@@ -163,19 +175,17 @@ export default function LoginForm() {
             margin="dense"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
             sx={{
               mb: 1.5,
               "& .MuiOutlinedInput-root": {
                 borderRadius: "8px",
-                bgcolor: "var(--bg-surface)",
+                bgcolor: "#2d2d2d",
                 fontSize: "14px",
-                color: "var(--text-primary)",
                 "& fieldset": {
-                  borderColor: "var(--border)",
+                  borderColor: "#444",
                 },
                 "&:hover fieldset": {
-                  borderColor: "var(--primary-light)",
+                  borderColor: "#666",
                 },
                 "&.Mui-focused fieldset": {
                   borderColor: "var(--primary)",
@@ -184,13 +194,13 @@ export default function LoginForm() {
               },
               "& .MuiInputLabel-root": {
                 fontSize: "14px",
-                color: "var(--text-secondary)",
+                color: "#999",
                 "&.Mui-focused": {
                   color: "var(--primary)",
                 },
               },
               "& .MuiOutlinedInput-input": {
-                color: "var(--text-primary)",
+                color: "#fff",
               },
             }}
           />
@@ -202,19 +212,17 @@ export default function LoginForm() {
             margin="dense"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
             sx={{
               mb: 2.5,
               "& .MuiOutlinedInput-root": {
                 borderRadius: "8px",
-                bgcolor: "var(--bg-surface)",
+                bgcolor: "#2d2d2d",
                 fontSize: "14px",
-                color: "var(--text-primary)",
                 "& fieldset": {
-                  borderColor: "var(--border)",
+                  borderColor: "#444",
                 },
                 "&:hover fieldset": {
-                  borderColor: "var(--primary-light)",
+                  borderColor: "#666",
                 },
                 "&.Mui-focused fieldset": {
                   borderColor: "var(--primary)",
@@ -223,13 +231,13 @@ export default function LoginForm() {
               },
               "& .MuiInputLabel-root": {
                 fontSize: "14px",
-                color: "var(--text-secondary)",
+                color: "#999",
                 "&.Mui-focused": {
                   color: "var(--primary)",
                 },
               },
               "& .MuiOutlinedInput-input": {
-                color: "var(--text-primary)",
+                color: "#fff",
               },
             }}
           />

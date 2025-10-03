@@ -38,38 +38,39 @@ export default function Dashboard() {
     navigate("/");
   };
 
-
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   // ---------------------- SHOW ASSIGNED TASKS ----------------------
-const [tasks, setTasks] = useState<any[]>([]);
-const [employees, setEmployees] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<any[]>([]);
 
-useEffect(() => {
-  const fetchTasks = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/tasks/all");
-      setTasks(res.data.tasks || []);
-    } catch (err) {
-      console.error("Failed to fetch tasks", err);
-    }
-  };
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/tasks/all");
+        setTasks(res.data.tasks || []);
+      } catch (err) {
+        console.error("Failed to fetch tasks", err);
+      }
+    };
 
-  const fetchEmployees = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/auth/employees", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setEmployees(res.data.employees || []);
-    } catch (err) {
-      console.error("Failed to fetch employees", err);
-    }
-  };
+    const fetchEmployees = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          "http://localhost:5000/api/auth/employees",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setEmployees(res.data.employees || []);
+      } catch (err) {
+        console.error("Failed to fetch employees", err);
+      }
+    };
 
-  fetchTasks();
-  fetchEmployees();
-}, []);
-
+    fetchTasks();
+    fetchEmployees();
+  }, []);
 
   // ---------------------- EMPLOYEE MODAL STATE ----------------------
   const [open, setOpen] = useState(false);
@@ -112,9 +113,12 @@ useEffect(() => {
 
       // Refresh employees list
       const token = localStorage.getItem("token");
-      const empRes = await axios.get("http://localhost:5000/api/auth/employees", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const empRes = await axios.get(
+        "http://localhost:5000/api/auth/employees",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setEmployees(empRes.data.employees || []);
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to add employee");
@@ -122,13 +126,17 @@ useEffect(() => {
   };
 
   const handleDeleteEmployee = async (employeeId: string) => {
-    if (!window.confirm("Are you sure you want to delete this employee?")) return;
+    if (!window.confirm("Are you sure you want to delete this employee?"))
+      return;
 
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/auth/employee/${employeeId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.delete(
+        `http://localhost:5000/api/auth/employee/${employeeId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setEmployees((prev) => prev.filter((e) => e._id !== employeeId));
     } catch (err: any) {
       alert("Failed to delete employee");
@@ -138,10 +146,33 @@ useEffect(() => {
   // ---------------------- TASK MODAL STATE ----------------------
   const [openTask, setOpenTask] = useState(false);
   const [taskTitle, setTaskTitle] = useState("");
-  const [taskRole, setTaskRole] = useState("Developer");
+  const [taskRole, setTaskRole] = useState("");
   const [taskSuccess, setTaskSuccess] = useState("");
   const [taskError, setTaskError] = useState("");
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [developers, setDevelopers] = useState([]);
+  const [specificUser, setSpecificUser] = useState("");
+
+  const handleRoleChange = async (e: { target: { value: any } }) => {
+    const role = e.target.value;
+    setTaskRole(role);
+    setSpecificUser("");
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:5000/api/auth/employees", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Filter users jinka subRole match kare
+      const filtered = res.data.employees.filter(
+        (emp: { subRole: any }) => emp.subRole === role
+      );
+      setDevelopers(filtered);
+    } catch (error) {
+      console.error("Error fetching developers:", error);
+    }
+  };
 
   const handleTaskOpen = () => setOpenTask(true);
   const handleTaskClose = () => {
@@ -153,45 +184,45 @@ useEffect(() => {
     setEditingTaskId(null);
   };
 
-  const handleAddTask = async (e: React.FormEvent) => {
+  const handleAddTask = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setTaskError("");
     setTaskSuccess("");
 
     try {
+      const body = {
+        title: taskTitle,
+        assignedTo: taskRole, // ✅ send role string
+        specificUser: specificUser || null, // ✅ send user ID if selected
+      };
+
       if (editingTaskId) {
-        // Update existing task
-        const res = await axios.put(
+        await axios.put(
           `http://localhost:5000/api/tasks/${editingTaskId}`,
-          {
-            title: taskTitle,
-            assignedTo: taskRole,
-          }
+          body
         );
         setTaskSuccess("Task updated successfully!");
-        setTasks((prev) =>
-          prev.map((t) =>
-            t._id === editingTaskId
-              ? { ...t, title: taskTitle, assignedSubRole: taskRole }
-              : t
-          )
-        );
       } else {
-        // Add new task
-        const res = await axios.post("http://localhost:5000/api/tasks/add", {
-          title: taskTitle,
-          assignedTo: taskRole,
-        });
+        const res = await axios.post(
+          "http://localhost:5000/api/tasks/add",
+          body
+        );
         setTaskSuccess(res.data.message);
-        // Refresh tasks
-        const tasksRes = await axios.get("http://localhost:5000/api/tasks/all");
-        setTasks(tasksRes.data.tasks || []);
       }
+
+      const tasksRes = await axios.get("http://localhost:5000/api/tasks/all");
+      setTasks(tasksRes.data.tasks || []);
+
       setTaskTitle("");
       setTaskRole("Developer");
+      setSpecificUser("");
       setEditingTaskId(null);
-    } catch (err: any) {
-      setTaskError(err.response?.data?.message || "Failed to save task");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setTaskError(err.response?.data?.message || "Failed to save task");
+      } else {
+        setTaskError("Something went wrong");
+      }
     }
   };
 
@@ -214,20 +245,25 @@ useEffect(() => {
   };
 
   const handleDeleteAttendance = async (attendanceId: string) => {
-    if (!window.confirm("Are you sure you want to delete this attendance record?")) return;
+    if (
+      !window.confirm("Are you sure you want to delete this attendance record?")
+    )
+      return;
 
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/attendance/${attendanceId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.delete(
+        `http://localhost:5000/api/attendance/${attendanceId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       // Refresh attendance records
       window.location.reload();
     } catch (err: any) {
       alert("Failed to delete attendance record");
     }
   };
-
 
   // -----------------------------------------------------------------
   return (
@@ -255,7 +291,7 @@ useEffect(() => {
               fontWeight: 700,
               color: "var(--text-primary)",
               mb: 0.3,
-              letterSpacing: "-0.02em"
+              letterSpacing: "-0.02em",
             }}
           >
             Dashboard
@@ -264,7 +300,7 @@ useEffect(() => {
             variant="body2"
             sx={{
               color: "var(--text-secondary)",
-              fontSize: "13px"
+              fontSize: "13px",
             }}
           >
             {user.email || "User"}
@@ -293,7 +329,9 @@ useEffect(() => {
       </Box>
 
       {/* Main Content */}
-      <Box sx={{ p: { xs: 2, sm: 3, md: 5 }, maxWidth: 1200, margin: "0 auto" }}>
+      <Box
+        sx={{ p: { xs: 2, sm: 3, md: 5 }, maxWidth: 1200, margin: "0 auto" }}
+      >
         {/* Action Buttons */}
         <Box sx={{ display: "flex", gap: 1.5, mb: 5 }}>
           <Button
@@ -372,7 +410,7 @@ useEffect(() => {
                 fontWeight: 700,
                 color: "var(--text-primary)",
                 mb: 3,
-                letterSpacing: "-0.01em"
+                letterSpacing: "-0.01em",
               }}
             >
               Add Employee
@@ -573,6 +611,7 @@ useEffect(() => {
         </Modal>
 
         {/* ---------------------- ADD TASK MODAL ---------------------- */}
+
         <Modal open={openTask} onClose={handleTaskClose}>
           <Box
             sx={{
@@ -597,109 +636,43 @@ useEffect(() => {
                 fontWeight: 700,
                 color: "var(--text-primary)",
                 mb: 3,
-                letterSpacing: "-0.01em"
+                letterSpacing: "-0.01em",
               }}
             >
               {editingTaskId ? "Edit Task" : "Add Task"}
             </Typography>
 
             {taskError && (
-              <Alert
-                severity="error"
-                sx={{
-                  mb: 2.5,
-                  borderRadius: "8px",
-                  bgcolor: "#fef2f2",
-                  color: "var(--error)",
-                  border: "1px solid #fecaca",
-                  fontSize: "13px",
-                }}
-              >
+              <Alert severity="error" sx={{ mb: 2.5 }}>
                 {taskError}
               </Alert>
             )}
             {taskSuccess && (
-              <Alert
-                severity="success"
-                sx={{
-                  mb: 2.5,
-                  borderRadius: "8px",
-                  bgcolor: "#f0fdf4",
-                  color: "var(--success)",
-                  border: "1px solid #bbf7d0",
-                  fontSize: "13px",
-                }}
-              >
+              <Alert severity="success" sx={{ mb: 2.5 }}>
                 {taskSuccess}
               </Alert>
             )}
 
             <form onSubmit={handleAddTask}>
+              {/* ✅ Task Title */}
               <TextField
                 label="Task Title"
-                type="text"
                 fullWidth
                 margin="dense"
                 value={taskTitle}
                 onChange={(e) => setTaskTitle(e.target.value)}
                 required
-                sx={{
-                  mb: 1.5,
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                    fontSize: "14px",
-                    color: "var(--text-primary)",
-                    "& fieldset": { borderColor: "var(--border)" },
-                    "&:hover fieldset": { borderColor: "var(--primary-light)" },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "var(--primary)",
-                      borderWidth: "1.5px",
-                    },
-                  },
-                  "& .MuiInputLabel-root": {
-                    fontSize: "14px",
-                    color: "var(--text-secondary)",
-                    "&.Mui-focused": { color: "var(--primary)" },
-                  },
-                  "& .MuiOutlinedInput-input": {
-                    color: "var(--text-primary)",
-                  },
-                }}
               />
 
+              {/* ✅ Select Role */}
               <TextField
                 select
-                label="Assign To"
+                label="Select Role"
                 fullWidth
                 margin="dense"
                 value={taskRole}
-                onChange={(e) => setTaskRole(e.target.value)}
+                onChange={handleRoleChange}
                 required
-                sx={{
-                  mb: 2.5,
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                    fontSize: "14px",
-                    color: "var(--text-primary)",
-                    "& fieldset": { borderColor: "var(--border)" },
-                    "&:hover fieldset": { borderColor: "var(--primary-light)" },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "var(--primary)",
-                      borderWidth: "1.5px",
-                    },
-                  },
-                  "& .MuiInputLabel-root": {
-                    fontSize: "14px",
-                    color: "var(--text-secondary)",
-                    "&.Mui-focused": { color: "var(--primary)" },
-                  },
-                  "& .MuiOutlinedInput-input": {
-                    color: "var(--text-primary)",
-                  },
-                  "& .MuiSelect-icon": {
-                    color: "var(--text-secondary)",
-                  },
-                }}
               >
                 <MenuItem value="Developer">Developer</MenuItem>
                 <MenuItem value="Designer">Designer</MenuItem>
@@ -708,6 +681,28 @@ useEffect(() => {
                 <MenuItem value="Marketing">Marketing</MenuItem>
               </TextField>
 
+              {/* ✅ Show all users of that role */}
+              {developers.length > 0 && (
+                <TextField
+                  select
+                  label="Select Employee"
+                  fullWidth
+                  margin="dense"
+                  value={specificUser}
+                  onChange={(e) => setSpecificUser(e.target.value)}
+                >
+                  {/* 👇 Add this option */}
+                  <MenuItem value="">Assign to all {taskRole}s</MenuItem>
+
+                  {developers.map((dev) => (
+                    <MenuItem key={dev._id} value={dev._id}>
+                      {dev.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+
+              {/* ✅ Submit Button */}
               <Button
                 type="submit"
                 variant="contained"
@@ -719,12 +714,6 @@ useEffect(() => {
                   color: "#000",
                   fontWeight: 700,
                   textTransform: "none",
-                  fontSize: "14px",
-                  boxShadow: "none",
-                  "&:hover": {
-                    bgcolor: "var(--primary-hover)",
-                    boxShadow: "0 4px 16px rgba(204, 255, 0, 0.3)",
-                  },
                 }}
               >
                 {editingTaskId ? "Update Task" : "Add Task"}
@@ -741,7 +730,7 @@ useEffect(() => {
               fontWeight: 700,
               color: "var(--text-primary)",
               mb: 2.5,
-              letterSpacing: "-0.01em"
+              letterSpacing: "-0.01em",
             }}
           >
             Assigned Tasks
@@ -760,7 +749,7 @@ useEffect(() => {
               <Typography
                 sx={{
                   color: "var(--text-secondary)",
-                  fontSize: "14px"
+                  fontSize: "14px",
                 }}
               >
                 No tasks assigned yet
@@ -840,14 +829,14 @@ useEffect(() => {
                       display: "flex",
                       gap: 2,
                       alignItems: "center",
-                      flexWrap: "wrap"
+                      flexWrap: "wrap",
                     }}
                   >
                     <Typography
                       variant="body2"
                       sx={{
                         color: "var(--text-secondary)",
-                        fontSize: "13px"
+                        fontSize: "13px",
                       }}
                     >
                       {task.assignedSubRole}
@@ -895,7 +884,6 @@ useEffect(() => {
           )}
         </Box>
 
-
         {/* ---------------------- ATTENDANCE RECORDS ---------------------- */}
         <Box>
           <Typography
@@ -904,7 +892,7 @@ useEffect(() => {
               fontWeight: 700,
               color: "var(--text-primary)",
               mb: 2.5,
-              letterSpacing: "-0.01em"
+              letterSpacing: "-0.01em",
             }}
           >
             Attendance Records
@@ -941,7 +929,7 @@ useEffect(() => {
                 <Typography
                   sx={{
                     color: "var(--text-secondary)",
-                    fontSize: "14px"
+                    fontSize: "14px",
                   }}
                 >
                   Loading...
@@ -962,7 +950,7 @@ useEffect(() => {
                   <Typography
                     sx={{
                       color: "var(--text-secondary)",
-                      fontSize: "14px"
+                      fontSize: "14px",
                     }}
                   >
                     No attendance records yet
@@ -1018,7 +1006,9 @@ useEffect(() => {
                         </Typography>
                       </Box>
 
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         {record.punchOutTime ? (
                           <Box
                             sx={{
@@ -1090,52 +1080,66 @@ useEffect(() => {
                         alignItems: "center",
                       }}
                     >
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 0.8 }}
+                      >
                         <FontAwesomeIcon
                           icon={faClock}
                           style={{
                             color: "var(--success)",
-                            fontSize: "12px"
+                            fontSize: "12px",
                           }}
                         />
                         <Typography
                           variant="body2"
                           sx={{
                             color: "var(--text-secondary)",
-                            fontSize: "13px"
+                            fontSize: "13px",
                           }}
                         >
-                          {new Date(record.punchInTime).toLocaleString("en-GB", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            day: "2-digit",
-                            month: "short"
-                          })}
+                          {new Date(record.punchInTime).toLocaleString(
+                            "en-GB",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              day: "2-digit",
+                              month: "short",
+                            }
+                          )}
                         </Typography>
                       </Box>
 
                       {record.punchOutTime && (
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.8,
+                          }}
+                        >
                           <FontAwesomeIcon
                             icon={faClock}
                             style={{
                               color: "var(--error)",
-                              fontSize: "12px"
+                              fontSize: "12px",
                             }}
                           />
                           <Typography
                             variant="body2"
                             sx={{
                               color: "var(--text-secondary)",
-                              fontSize: "13px"
+                              fontSize: "13px",
                             }}
                           >
-                            {new Date(record.punchOutTime).toLocaleString("en-GB", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              day: "2-digit",
-                              month: "short"
-                            })}
+                            {new Date(record.punchOutTime).toLocaleString(
+                              "en-GB",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                day: "2-digit",
+                                month: "short",
+                              }
+                            )}
                           </Typography>
                         </Box>
                       )}
@@ -1155,7 +1159,7 @@ useEffect(() => {
               fontWeight: 700,
               color: "var(--text-primary)",
               mb: 2.5,
-              letterSpacing: "-0.01em"
+              letterSpacing: "-0.01em",
             }}
           >
             Employees
@@ -1174,7 +1178,7 @@ useEffect(() => {
               <Typography
                 sx={{
                   color: "var(--text-secondary)",
-                  fontSize: "14px"
+                  fontSize: "14px",
                 }}
               >
                 No employees yet
@@ -1271,8 +1275,6 @@ useEffect(() => {
           )}
         </Box>
       </Box>
-
-
     </Box>
   );
 }

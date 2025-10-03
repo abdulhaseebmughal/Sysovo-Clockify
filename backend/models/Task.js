@@ -8,10 +8,15 @@ const taskSchema = new mongoose.Schema(
       enum: ["Developer", "Designer", "Content Writer", "SEO", "Marketing"],
       required: true,
     },
+    assignedUser: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null, //  optional, if specific user selected
+    },
     status: {
       type: String,
       enum: ["Pending", "OnHold", "Completed"],
-      default: "Pending", 
+      default: "Pending",
     },
   },
   { timestamps: true }

@@ -80,4 +80,23 @@ export const getAllAttendance = async (req, res) => {
   }
 };
 
+// ✅ Delete attendance record (CEO or Admin)
+export const deleteAttendance = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = await Attendance.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Attendance record not found" });
+    }
+
+    res.status(200).json({ message: "Attendance record deleted successfully" });
+  } catch (err) {
+    console.error("❌ Error deleting attendance:", err);
+    res.status(500).json({ message: "Failed to delete attendance record", error: err.message });
+  }
+};
+
+
 

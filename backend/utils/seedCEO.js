@@ -2,8 +2,8 @@ import User from "../models/User.js";
 
 export async function seedCEO() {
   try {
-    const ceoEmail = process.env.CEO_EMAIL || "ceo@demo.com";
-    const ceoPassword = process.env.CEO_PASSWORD || "ChangeMe123";
+    const ceoEmail = process.env.CEO_EMAIL ;
+    const ceoPassword = process.env.CEO_PASSWORD;
 
     const existing = await User.findOne({ email: ceoEmail });
     if (existing) {

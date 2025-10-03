@@ -75,3 +75,36 @@ export const addEmployee = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// ✅ GET /api/auth/employees — CEO fetches all employees
+export const getAllEmployees = async (req, res) => {
+  try {
+    // Fetch only employees (role === "Employee")
+    const employees = await User.find({ role: "Employee" })
+      .select("_id name email subRole createdAt");
+
+    res.status(200).json({ employees });
+  } catch (err) {
+    console.error("❌ Error fetching employees:", err);
+    res.status(500).json({ message: "Failed to fetch employees", error: err.message });
+  }
+};
+
+// ✅ DELETE /api/auth/employee/:id
+export const deleteEmployee = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedUser = await User.findByIdAndDelete(id);
+    if (!deletedUser) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    res.status(200).json({ message: "Employee deleted successfully" });
+  } catch (err) {
+    console.error("❌ Error deleting employee:", err);
+    res.status(500).json({ message: "Failed to delete employee", error: err.message });
+  }
+};
+
+

@@ -73,7 +73,8 @@ export default function EmployeeDashboard() {
     };
 
     fetchSession();
-  }, [navigate, token]);
+  },
+   [navigate, token]);
 
   // 🕒 Live Timer
   useEffect(() => {
