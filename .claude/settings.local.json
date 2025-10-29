@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(timeout /t 3 /nobreak)",
+      "Bash(node deleteCEO.js:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(where /r . nul)",
+      "Bash(powershell -Command:*)",
+      "Bash(if exist nul del /f nul)",
+      "Bash(git reset:*)",
+      "Bash(dir:*)",
+      "Bash(curl:*)",
+      "Bash(node test-connection.js:*)",
+      "Bash(findstr:*)",
+      "Bash(node -e:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)",
+      "Bash(del \"DEPLOYMENT-GUIDE.md\" \"SETUP-GUIDE.md\" \"flovo-frontend-main\\README.md\" \"flovo-frontend-main\\public\\icons\\README.md\" \"sysovo-backend-main\\README.md\")",
+      "Bash(npm install:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
